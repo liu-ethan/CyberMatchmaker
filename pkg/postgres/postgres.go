@@ -6,10 +6,11 @@ package postgres
 
 import (
 	global "CyberMatchmaker/pkg"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"sync"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var pgOnce sync.Once
@@ -18,6 +19,7 @@ var pgOnce sync.Once
 func InitDB(dsn string) {
 	pgOnce.Do(func() {
 		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
 		if err != nil {
 			log.Fatalf("PostgreSQL 初始化失败: %v", err)
 		}

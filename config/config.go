@@ -21,6 +21,7 @@ type Config struct {
 	Redis    RedisConfig    `mapstructure:"redis"`
 	RabbitMQ RabbitMQConfig `mapstructure:"rabbitmq"`
 	LLM      LLMConfig      `mapstructure:"llm"`
+	Jwt      JWTConfig      `mapstructure:"jwt"`
 }
 
 type ServerConfig struct {
@@ -53,6 +54,11 @@ type LLMConfig struct {
 	BaseURL        string `mapstructure:"base_url"`
 	Model          string `mapstructure:"model"`
 	EmbeddingModel string `mapstructure:"embedding_model"`
+}
+
+type JWTConfig struct {
+	Expire int    `mapstructure:"expire"`
+	Secret string `mapstructure:"secret"`
 }
 
 // InitConfig 初始化配置文件
