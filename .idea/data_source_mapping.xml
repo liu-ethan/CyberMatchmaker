@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="DataSourcePerFileMappings">
-    <file url="file://$PROJECT_DIR$/pkg/postgres/psql_init/create.sql" value="3128f634-ff34-4ae1-b34c-2e1f994ac596" />
-  </component>
-</project>
