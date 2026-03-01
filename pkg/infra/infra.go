@@ -6,6 +6,7 @@ package infra
 
 import (
 	"CyberMatchmaker/config"
+	"CyberMatchmaker/mq"
 	"CyberMatchmaker/pkg/postgres"
 	"CyberMatchmaker/pkg/rabbitmq"
 	"CyberMatchmaker/pkg/redis"
@@ -31,6 +32,12 @@ func InitAll() {
 
 	// 3. 初始化 RabbitMQ [cite: 10]
 	rabbitmq.InitRabbitMQ()
+
+	// 4. 初始化 RabbitMQ 生产者
+	mq.InitProducer(rabbitmq.Ch, config.AppConfig.RabbitMQ.QName)
+
+	// 5. 启动 RabbitMQ 消息消费者
+	mq.StartConsumer(mq.GlobalProducer)
 }
 
 // CloseAll 统一释放资源

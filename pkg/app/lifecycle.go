@@ -6,28 +6,27 @@ package app
 
 import (
 	"CyberMatchmaker/config"
-	"CyberMatchmaker/mq"
 	"CyberMatchmaker/route"
-	"CyberMatchmaker/service"
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // Run 启动整个应用并处理优雅退出
 func Run() {
 	// 准备上下文和 WaitGroup
-	ctx, cancel := context.WithCancel(context.Background())
+	//ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
 	// 1. 启动后台消费者
-	go mq.StartFortuneConsumer(ctx, &wg, service.GenerateFortune)
+	//go mq.StartFortuneConsumer(ctx, &wg, service.GenerateFortune)
 
 	// 2. 配置 Web 服务
 	srv := &http.Server{
@@ -50,7 +49,7 @@ func Run() {
 
 	// 5. 优雅关机流程
 	zap.S().Info("正在安全退出...")
-	cancel() // 通知消费者停止接收新消息
+	//cancel() // 通知消费者停止接收新消息
 
 	// 设置 5 秒超时强行关闭 Web 服务
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)

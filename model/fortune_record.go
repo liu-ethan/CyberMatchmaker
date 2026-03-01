@@ -4,7 +4,9 @@
  */
 package model
 
-import "time"
+import (
+	"time"
+)
 
 // FortuneRecord 映射 fortune_record 表
 type FortuneRecord struct {
@@ -13,8 +15,8 @@ type FortuneRecord struct {
 	RealName    string    `gorm:"type:varchar(50);not null" json:"real_name"`
 	Gender      string    `gorm:"type:varchar(10);not null" json:"gender"`
 	BirthDate   time.Time `gorm:"type:date;not null" json:"birth_date"`
-	BirthTime   string    `gorm:"type:varchar(20);not null" json:"birth_time"`
-	CurrentCity string    `gorm:"type:varchar(100);not null" json:"current_city"`
+	BirthTime   string    `gorm:"type:varchar(20)" json:"birth_time"`
+	CurrentCity string    `gorm:"type:varchar(100)" json:"current_city"`
 
 	// 大模型计算结果 (使用指针处理 NULL 值，因为 pending 状态下这些字段为空)
 	Bazi          *string `gorm:"type:varchar(50)" json:"bazi,omitempty"`
@@ -28,4 +30,15 @@ type FortuneRecord struct {
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	IsDeleted int8      `gorm:"column:is_deleted;default:0" json:"is_deleted"`
+}
+
+// TableName 显式指定表名，防止 GORM 将表名解析为 fortune_record
+func (FortuneRecord) TableName() string {
+	return `fortune_record`
+}
+
+// FortuneTaskMessage 定义了发送到队列的消息格式
+type FortuneTaskMessage struct {
+	RecordID int64 `json:"id"`
+	UserID   int64 `json:"user_id"`
 }

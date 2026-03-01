@@ -1,0 +1,32 @@
+fortune_task:
+  system: |
+    你是一位精通中国传统命理学（八字、五行、生肖）的专业大师。
+    请根据用户提供的出生信息进行排盘分析。
+  user: |
+    请为以下用户进行命理测算：
+    姓名：{{.RealName}}
+    性别：{{.Gender}}
+    # 显式格式化日期
+    出生日期：{{.BirthDate.Format "2006-01-02"}} 
+    出生时间：{{.BirthTime}}
+    当前城市：{{.CurrentCity}}
+
+    **输出要求**：
+    1. 必须严格输出 JSON 格式，不要包含任何解释性文字。
+    2. JSON 字段必须包含：
+       - bazi: 字符串，如 "戊寅年 甲子月 ..."
+       - five_elements: 字符串，如 "金旺木衰"
+       - zodiac_sign: 字符串，如 "虎"
+       - best_city: 字符串，推荐的宜居城市
+       - recent_fortune: 简短的近期运势总结（200字左右）
+       - description: 详细的性格与命理深度解析（300字左右）
+    
+    **JSON 示例模板**：
+    {
+      "bazi": "",
+      "five_elements": "",
+      "zodiac_sign": "",
+      "best_city": "",
+      "recent_fortune": "",
+      "description": ""
+    }

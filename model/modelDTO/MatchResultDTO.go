@@ -2,7 +2,7 @@
  * @author 刘潇翰
  * @since 2026/3/1
  */
-package model
+package modelDTO
 
 // MatchResult 定义一个专用的 DTO (Data Transfer Object) 承接联表和向量查询的返回结果
 type MatchResult struct {

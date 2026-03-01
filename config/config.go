@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 // 全局配置变量，项目其他地方直接通过 config.AppConfig.Database.Host 调用
@@ -46,7 +47,8 @@ type RedisConfig struct {
 }
 
 type RabbitMQConfig struct {
-	URL string `mapstructure:"url"`
+	URL   string `mapstructure:"url"`
+	QName string `mapstructure:"qName"`
 }
 
 type LLMConfig struct {
@@ -80,5 +82,16 @@ func InitConfig() {
 		log.Fatalf("AppConfig无法decode到struct类型, 原因：%v", err)
 	}
 
+	// --- 关键：合并 prompt.yaml ---
+	viper.SetConfigFile("config/prompt.yaml")
+	if err := viper.MergeInConfig(); err != nil {
+		zap.S().Errorf("加载 prompt.yaml 失败: %v", err)
+	}
+
 	fmt.Println("Config加载成功")
+}
+
+// GetPrompt 从配置中获取指定 key 的值，供其他模块调用
+func GetPrompt(key string) string {
+	return viper.GetString(key)
 }

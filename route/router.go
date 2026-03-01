@@ -41,7 +41,7 @@ func SetupRouter() *gin.Engine {
 				// 提交算命参数: POST /api/v1/fortune/submit
 				fortuneGroup.POST("/submit", controller.SubmitFortune)
 				// 轮询查询算命结果: GET /api/v1/fortune/result
-				fortuneGroup.GET("/result", controller.GetFortuneResult)
+				//fortuneGroup.GET("/result", controller.GetFortuneResult)
 			}
 
 			// 3. 匹配交友广场模块 (Match Module)

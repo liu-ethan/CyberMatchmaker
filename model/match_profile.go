@@ -5,8 +5,9 @@
 package model
 
 import (
-	"github.com/pgvector/pgvector-go"
 	"time"
+
+	"github.com/pgvector/pgvector-go"
 )
 
 // MatchProfile 映射 match_profile 表
@@ -25,4 +26,9 @@ type MatchProfile struct {
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	IsDeleted int8      `gorm:"column:is_deleted;default:0;index:idx_match_profile_filters;index:idx_match_profile_is_deleted" json:"is_deleted"`
+}
+
+// TableName 显式指定表名，防止 GORM 将表名解析为 match_profile
+func (MatchProfile) TableName() string {
+	return `match_profile`
 }
