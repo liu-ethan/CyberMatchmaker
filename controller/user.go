@@ -7,6 +7,7 @@ package controller
 import (
 	"CyberMatchmaker/pkg/response"
 	"CyberMatchmaker/service"
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,11 +35,12 @@ func Register(c *gin.Context) {
 
 func Login(c *gin.Context) {
 	var req UserRequest
+	var ctx = context.Background()
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "参数错误")
 		return
 	}
-	token, err := service.LoginUser(req.Username, req.Password)
+	token, err := service.LoginUser(ctx, req.Username, req.Password)
 	if err != nil {
 		response.Error(c, http.StatusUnauthorized, "用户名或密码错误")
 		return

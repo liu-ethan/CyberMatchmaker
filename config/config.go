@@ -59,6 +59,7 @@ type LLMConfig struct {
 type JWTConfig struct {
 	Expire int    `mapstructure:"expire"`
 	Secret string `mapstructure:"secret"`
+	Prefix string `mapstructure:"prefix"`
 }
 
 // InitConfig 初始化配置文件
