@@ -41,19 +41,19 @@ func SetupRouter() *gin.Engine {
 				// 提交算命参数: POST /api/v1/fortune/submit
 				fortuneGroup.POST("/submit", controller.SubmitFortune)
 				// 轮询查询算命结果: GET /api/v1/fortune/result
-				//fortuneGroup.GET("/result", controller.GetFortuneResult)
+				fortuneGroup.GET("/result", controller.GetLatestFortuneResult)
 			}
 
-			// 3. 匹配交友广场模块 (Match Module)
-			//matchGroup := authRequired.Group("/match")
-			//{
-			//	// 开启匹配 (加入广场): POST /api/v1/match/join
-			//	matchGroup.POST("/join", controller.JoinMatch)
-			//	// 匹配寻找异性 (核心向量检索): POST /api/v1/match/search
-			//	matchGroup.POST("/search", controller.SearchMatch)
-			//	// 退出匹配广场: POST /api/v1/match/leave
-			//	matchGroup.POST("/leave", controller.LeaveMatch)
-			//}
+			//3. 匹配交友广场模块 (Match Module)
+			matchGroup := authRequired.Group("/match")
+			{
+				// 开启匹配 (加入广场): POST /api/v1/match/join
+				matchGroup.POST("/join", controller.JoinMatch)
+				// 匹配寻找异性 (核心向量检索): POST /api/v1/match/search
+				//matchGroup.POST("/search", controller.SearchMatch)
+				// 退出匹配广场: POST /api/v1/match/leave
+				//matchGroup.POST("/leave", controller.LeaveMatch)
+			}
 		}
 	}
 

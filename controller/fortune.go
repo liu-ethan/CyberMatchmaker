@@ -34,7 +34,20 @@ func SubmitFortune(c *gin.Context) {
 	response.Success(c, gin.H{"record_id": recordID})
 }
 
-// GetFortuneResult 处理轮询查询算命结果的接口 (GET /fortune/result)
-func GetFortuneResult(c *gin.Context) {
-
+// GetLatestFortuneResult 处理轮询查询算命结果的接口 (GET /fortune/result)
+func GetLatestFortuneResult(c *gin.Context) {
+	// 1. 从上下文中获取 user_id（JWTAuth 中间件已注入）
+	userID, exists := c.Get("user_id")
+	if !exists {
+		response.Error(c, http.StatusUnauthorized, "用户未登录")
+		return
+	}
+	// 2. 传入到Service层
+	result, err := service.GetFortuneResult(c, userID.(int64))
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "查询结果失败")
+		return
+	}
+	// 3. 返回算命结果给前端
+	response.Success(c, gin.H{"fortune_result": result})
 }

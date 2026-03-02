@@ -28,3 +28,13 @@ func UpdateFortuneRecord(record *model.FortuneRecord) error {
 	// Save 是一个“全量更新”操作，如果 ID 存在则更新，不存在则插入
 	return global.DB.Save(record).Error
 }
+
+// GetLatestFortuneRecordByUserID 根据 user_id 查询最新的算命记录（status = completed）
+func GetLatestFortuneRecordByUserID(userID int64) (*model.FortuneRecord, error) {
+	var record model.FortuneRecord
+	err := global.DB.
+		Where("user_id = ? and status = ?", userID, "completed").
+		Order("created_at desc").
+		First(&record).Error
+	return &record, err
+}

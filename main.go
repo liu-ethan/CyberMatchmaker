@@ -15,7 +15,7 @@ func main() {
 	logger.InitLogger()
 	defer zap.L().Sync()
 
-	// 2. 基础设施初始化 (内部调用你已写好的 InitDB 和 InitRedis)
+	// 2. 基础设施初始化 (DB, Redis, RabbitMQ)
 	infra.InitAll()
 	defer infra.CloseAll()
 
