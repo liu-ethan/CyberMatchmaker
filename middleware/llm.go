@@ -64,7 +64,7 @@ func (s *LLMService) CallAI(ctx context.Context, sysPrompt, userPrompt string) (
 // Embedding 现在直接调用封装好的高级函数
 func (s *LLMService) Embedding(ctx context.Context, text string) ([]float32, error) {
 	if s.Embedder == nil {
-		return nil, fmt.Errorf("Embedder 未初始化")
+		return nil, fmt.Errorf("embedder 未初始化")
 	}
 	// EmbedQuery 是 langchaingo 封装好的函数：直接输入字符串，返回 []float32
 	return s.Embedder.EmbedQuery(ctx, text)

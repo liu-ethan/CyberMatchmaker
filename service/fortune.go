@@ -13,7 +13,6 @@ import (
 	"CyberMatchmaker/mq"
 	"CyberMatchmaker/pkg/utils"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -28,8 +27,6 @@ type FortuneMQ struct {
 	RecordID int64
 	UserID   int64
 }
-
-var consumeOnce sync.Once // StartConsumeFortune 确保 ConsumeFortune 只被调用一次，避免重复启动消费者
 
 // SubmitFortune 处理提交算命参数的业务逻辑，提交后返回recordID，结果通过异步处理后存储在数据库中
 func SubmitFortune(c *gin.Context, userID int64) (int64, error) {
@@ -57,19 +54,23 @@ func SubmitFortune(c *gin.Context, userID int64) (int64, error) {
 		UserID:   userID,
 	}
 	data, _ := json.Marshal(msg)
-	err := mq.Publish("", config.AppConfig.RabbitMQ.QName, data)
+	err := mq.Publish("", config.AppConfig.RabbitMQ.FortuneQName, data)
 	if err != nil {
 		zap.S().Info("生产者发送消息失败: ", err)
 		return -1, err
 	}
 
-	// 5. 启动消费者
-	ConsumeFortune()
-
 	return record.ID, nil
 }
 
+// ConsumeFortune 处理从消息队列中接收的算命请求，进行算命逻辑处理，并将结果存储回数据库
+// 只能调用一次, 在infra.go里面调用
+func ConsumeFortune() {
+	mq.Consume(config.AppConfig.RabbitMQ.FortuneQName, ConsumeHandleFortune)
+}
+
 // ConsumeHandleFortune 业务代码 处理从消息队列中接收的算命请求，进行算命逻辑处理，并将结果存储回数据库
+// ConsumeFortuned的Handler函数，包含核心业务逻辑：
 func ConsumeHandleFortune(d amqp.Delivery) {
 	zap.S().Info("收到订单消息: ", string(d.Body))
 
@@ -104,15 +105,8 @@ func ConsumeHandleFortune(d amqp.Delivery) {
 	zap.S().Info("订单 %d 处理完成，结果已更新到数据库", data.RecordID)
 }
 
-// ConsumeFortune 处理从消息队列中接收的算命请求，进行算命逻辑处理，并将结果存储回数据库
-func ConsumeFortune() {
-	consumeOnce.Do(func() {
-		mq.Consume(config.AppConfig.RabbitMQ.QName, ConsumeHandleFortune)
-	})
-}
-
+// GetFortuneResult 根据用户ID查询最新的算命记录
 func GetFortuneResult(c *gin.Context, userID int64) (modelDTO.FortuneResponseDTO, error) {
-	// 1. 从数据库查询用户的算命记录
 	record, err := mapper.GetLatestFortuneRecordByUserID(userID)
 	if err != nil {
 		return modelDTO.FortuneResponseDTO{}, fmt.Errorf("查询不到算命记录: %v", err)

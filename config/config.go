@@ -47,8 +47,10 @@ type RedisConfig struct {
 }
 
 type RabbitMQConfig struct {
-	URL   string `mapstructure:"url"`
-	QName string `mapstructure:"qName"`
+	URL            string `mapstructure:"url"`
+	FortuneQName   string `mapstructure:"fortuneQName"`
+	EmbeddingQName string `mapstructure:"embeddingQName"`
+	SearchQName    string `mapstructure:"searchQName"`
 }
 
 type LLMConfig struct {

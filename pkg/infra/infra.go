@@ -10,6 +10,7 @@ import (
 	"CyberMatchmaker/pkg/postgres"
 	"CyberMatchmaker/pkg/rabbitmq"
 	"CyberMatchmaker/pkg/redis"
+	"CyberMatchmaker/service"
 	"fmt"
 )
 
@@ -33,7 +34,10 @@ func InitAll() {
 	// 3. 初始化 RabbitMQ
 	rabbitmq.NewRabbitMQ()
 
-	// 6. 初始化LLM
+	// 4. 初始化 MQ 消息消费者
+	service.InitConsumers()
+
+	// 5. 初始化LLM
 	middleware.NewLLMService()
 }
 

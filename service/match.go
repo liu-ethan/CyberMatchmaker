@@ -5,19 +5,30 @@
 package service
 
 import (
+	"CyberMatchmaker/config"
 	"CyberMatchmaker/mapper"
 	"CyberMatchmaker/middleware"
 	"CyberMatchmaker/model"
 	"CyberMatchmaker/model/modelDTO"
+	"CyberMatchmaker/mq"
 	"errors"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/jinzhu/copier"
 	"github.com/pgvector/pgvector-go"
+	amqp "github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
 	"golang.org/x/net/context"
 	"gorm.io/gorm"
 )
 
+type MatchMQ struct {
+	Profile     model.MatchProfile
+	Description string
+}
+
+// JoinMatch 处理用户加入匹配的业务逻辑
 func JoinMatch(c *gin.Context, userID int64) error {
 	// 1. 检查用户是否已经开启第一次算命
 	fortuneRecord, err := mapper.GetLatestFortuneRecordByUserID(userID)
@@ -44,17 +55,41 @@ func JoinMatch(c *gin.Context, userID int64) error {
 	matchProfile.FortuneRecordID = fortuneRecord.ID
 	matchProfile.WechatID = matchProfileDTO.WechatID
 	matchProfile.City = fortuneRecord.CurrentCity
-	// 根据fortuneRecord.Description计算Embedding向量
-	embedding, _ := middleware.LLM.Embedding(context.Background(), *fortuneRecord.Description)
-	matchProfile.PartnerEmbedding = pgvector.NewVector(embedding)
 
-	// 6. 将matchProfile保存到数据库
-	err = mapper.CreateMatchProfile(&matchProfile)
-	if err != nil {
-		err := errors.New("保存数据库失败，微信号已重复")
-		return err
+	// 6. 转为MatchMQ
+	matchMQ := &MatchMQ{
+		Profile:     matchProfile,
+		Description: *fortuneRecord.Description,
 	}
+
+	// 6. 发送到消息队列，异步处理匹配逻辑
+	body, _ := json.Marshal(&matchMQ)
+	mq.Publish("", config.AppConfig.RabbitMQ.EmbeddingQName, body)
 
 	// 7. 返回成功
 	return nil
+}
+
+// JoinMatchConsume 消费者函数，监听JoinMatch的消息队列，处理匹配逻辑
+// 只调用一次
+func JoinMatchConsume() {
+	mq.Consume(config.AppConfig.RabbitMQ.EmbeddingQName, JoinMatchConsumeHandler)
+}
+
+// JoinMatchConsumeHandler 处理JoinMatch的消息队列消费逻辑
+func JoinMatchConsumeHandler(d amqp.Delivery) {
+	// 1. 将消息体反序列化为MatchMQ对象
+	var matchMQ MatchMQ
+	_ = json.Unmarshal(d.Body, &matchMQ)
+
+	// 2. 根据fortuneRecord.Description计算Embedding向量
+	embedding, _ := middleware.LLM.Embedding(context.Background(), matchMQ.Description)
+	matchMQ.Profile.PartnerEmbedding = pgvector.NewVector(embedding)
+
+	// 3. 将matchProfile保存到数据库
+	err := mapper.CreateMatchProfile(&matchMQ.Profile)
+	if err != nil {
+		zap.S().Error("数据库保存失败", err)
+		return
+	}
 }

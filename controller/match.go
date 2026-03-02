@@ -25,5 +25,5 @@ func JoinMatch(c *gin.Context) {
 		return
 	}
 	// 3. 返回成功响应
-	c.JSON(http.StatusOK, gin.H{"message": "成功加入匹配"})
+	c.JSON(http.StatusOK, gin.H{"message": "成功加入匹配，请等待5秒后查看匹配结果"})
 }
