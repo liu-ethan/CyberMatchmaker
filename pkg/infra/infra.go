@@ -7,7 +7,6 @@ package infra
 import (
 	"CyberMatchmaker/config"
 	"CyberMatchmaker/middleware"
-	"CyberMatchmaker/mq"
 	"CyberMatchmaker/pkg/postgres"
 	"CyberMatchmaker/pkg/rabbitmq"
 	"CyberMatchmaker/pkg/redis"
@@ -16,7 +15,7 @@ import (
 
 // InitAll 统一初始化所有基础设施
 func InitAll() {
-	// 1. 拼接并初始化 Postgres [cite: 8]
+	// 1. 拼接并初始化 Postgres
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s TimeZone=Asia/Shanghai",
 		config.AppConfig.Database.Host,
 		config.AppConfig.Database.Port,
@@ -27,25 +26,18 @@ func InitAll() {
 	)
 	postgres.InitDB(dsn)
 
-	// 2. 拼接并初始化 Redis [cite: 9]
+	// 2. 拼接并初始化 Redis
 	redisAddr := fmt.Sprintf("%s:%d", config.AppConfig.Redis.Host, config.AppConfig.Redis.Port)
 	redis.InitRedis(redisAddr, config.AppConfig.Redis.Password, config.AppConfig.Redis.DB)
 
-	// 3. 初始化 RabbitMQ [cite: 10]
-	rabbitmq.InitRabbitMQ()
-
-	// 4. 初始化 RabbitMQ 生产者
-	mq.InitProducer(rabbitmq.Ch, config.AppConfig.RabbitMQ.QName)
-
-	// 5. 启动 RabbitMQ 消息消费者
-	mq.StartConsumer(mq.GlobalProducer)
+	// 3. 初始化 RabbitMQ
+	rabbitmq.NewRabbitMQ()
 
 	// 6. 初始化LLM
 	middleware.NewLLMService()
 }
 
-// CloseAll 统一释放资源
 func CloseAll() {
-	rabbitmq.Close()
-	// 如果你的 postgres/redis 也有 Close 方法也可以加在这里
+	// 关闭 RabbitMQ 连接
+	rabbitmq.MQ.Close()
 }

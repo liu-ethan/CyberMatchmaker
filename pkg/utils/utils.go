@@ -18,7 +18,6 @@ func StringtoClass(aiRaw string, record interface{}) error {
 	cleanJSON = strings.TrimPrefix(cleanJSON, "```json")
 	cleanJSON = strings.TrimSuffix(cleanJSON, "```")
 	cleanJSON = strings.TrimSpace(cleanJSON)
-
 	// 2. 填充：Unmarshal 到指针，实现增量更新
 	// 注意：record 必须是一个指针
 	return json.Unmarshal([]byte(cleanJSON), record)

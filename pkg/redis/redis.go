@@ -26,15 +26,12 @@ func InitRedis(addr, password string, db int) {
 			PoolSize:     20, // 连接池大小
 			MinIdleConns: 5,  // 最小空闲连接数
 		})
-
 		// 探活测试，验证连接是否真实可用
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-
 		if _, err := client.Ping(ctx).Result(); err != nil {
 			log.Fatalf("Redis 连接失败: %v", err)
 		}
-
 		global.Redis = client
 		log.Println("Redis 初始化成功")
 	})
