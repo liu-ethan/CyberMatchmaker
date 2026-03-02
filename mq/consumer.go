@@ -5,9 +5,12 @@
 package mq
 
 import (
+	"CyberMatchmaker/config"
 	"CyberMatchmaker/mapper"
 	"CyberMatchmaker/middleware"
 	"CyberMatchmaker/model"
+	"CyberMatchmaker/pkg/utils"
+	"context"
 	"encoding/json"
 	"log"
 
@@ -39,10 +42,19 @@ func StartConsumer(p *FortuneProducer) {
 				zap.S().Error("查询不到记录 ID %d: %v", task.RecordID, err)
 			}
 			// TODO: 2. 调用大模型 API (如 OpenAI/DeepSeek)
-			// TODO: 3. 将大模型返回的结果封装回 FortuneRecord
-			// TODO: 4. 更新数据库：status = 'completed', 填充 Bazi, RecentFortune 等
-			_ = middleware.HandleFortuneLogic(record)
 			zap.S().Info("正在处理用户 %d 的订单 %d...", task.UserID, task.RecordID)
+			sysPrompt := config.GetPrompt("fortune_task.system")
+			userPrompt := config.GetPrompt("fortune_task.user")
+			AIResponse, err := middleware.LLM.CallAI(context.Background(), sysPrompt, userPrompt)
+			if err != nil {
+				zap.S().Error("调用大模型失败: %v", err)
+			}
+			// TODO: 3. 将大模型返回的结果封装回 FortuneRecord
+			utils.CleanMarkdown(&AIResponse)
+			utils.StringtoClass(AIResponse, record)
+			// TODO: 4. 更新数据库：status = 'completed', 填充 Bazi, RecentFortune 等
+			mapper.UpdateFortuneRecord(record)
+			zap.S().Info("订单 %d 处理完成，结果已更新到数据库", task.RecordID)
 		}
 	}()
 }

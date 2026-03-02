@@ -7,10 +7,10 @@ package mq
 import (
 	"CyberMatchmaker/model"
 
+	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
 )
-import "encoding/json"
 
 // FortuneProducer 负责连接 RabbitMQ 并发送消息到队列
 type FortuneProducer struct {
@@ -30,7 +30,6 @@ func InitProducer(ch *amqp.Channel, qName string) {
 	if err != nil {
 		zap.S().Fatalf("无法在信道上声明队列: %v", err)
 	}
-
 	// 2. 封装进全局变量
 	GlobalProducer = &FortuneProducer{
 		channel: ch,    // 使用传入的信道
@@ -45,7 +44,6 @@ func (p *FortuneProducer) PublishFortuneTask(msg model.FortuneTaskMessage) error
 	if err != nil {
 		return err
 	}
-
 	// 2. 发布消息
 	return p.channel.Publish(
 		"",      // exchange (空字符串表示使用默认交换机)
