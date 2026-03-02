@@ -50,7 +50,7 @@ func SetupRouter() *gin.Engine {
 				// 开启匹配 (加入广场): POST /api/v1/match/join
 				matchGroup.POST("/join", controller.JoinMatch)
 				// 匹配寻找异性 (核心向量检索): POST /api/v1/match/search
-				//matchGroup.POST("/search", controller.SearchMatch)
+				matchGroup.GET("/search", controller.SearchMatch)
 				// 退出匹配广场: POST /api/v1/match/leave
 				//matchGroup.POST("/leave", controller.LeaveMatch)
 			}

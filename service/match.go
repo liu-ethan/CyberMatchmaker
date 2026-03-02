@@ -93,3 +93,32 @@ func JoinMatchConsumeHandler(d amqp.Delivery) {
 		return
 	}
 }
+
+// SearchMatch 处理用户搜索匹配的业务逻辑
+func SearchMatch(userID int64) (*modelDTO.SearchMatchDTO, error) {
+	// 1. 根据userID查询当前用户的匹配信息
+	CurrUsrProfile, err := mapper.GetMatchProfileByUserID(userID)
+	if err != nil {
+		return nil, errors.New("你还没有加入匹配广场，没有你的微信号记录，无法做匹配哦")
+	}
+
+	// 2. 根据当前用户的Embedding向量和性别，查询数据库中异性用户的匹配信息，并计算相似度分数
+	MatchUsrProfile, score, err := mapper.FindBestMatch(userID, CurrUsrProfile.Gender, &CurrUsrProfile.PartnerEmbedding)
+
+	// 3. 根据RecordID查询对方的算命记录，获取对方的基本信息（如年龄、职业、兴趣等）
+	MatchUsrRecord, err := mapper.GetFortuneRecordByID(CurrUsrProfile.FortuneRecordID)
+
+	// 4. 将对方的基本信息和相似度分数封装成SearchMatchDTO对象，返回给前端
+	MatchUsrDTO := &modelDTO.SearchMatchDTO{
+		RealName:     MatchUsrRecord.RealName,
+		WechatID:     MatchUsrProfile.WechatID,
+		Gender:       MatchUsrProfile.Gender,
+		BirthDate:    MatchUsrRecord.BirthDate,
+		CurrentCity:  MatchUsrProfile.City,
+		Bazi:         *MatchUsrRecord.Bazi,
+		FiveElements: *MatchUsrRecord.FiveElements,
+		Similarity:   float32(score),
+	}
+
+	return MatchUsrDTO, nil
+}
