@@ -31,6 +31,14 @@ func GetMatchProfileByUserID(userID int64) (*model.MatchProfile, error) {
 	return &profile, nil
 }
 
+// DeleteMatchProfileByUserID 根据用户ID软删除匹配信息
+func DeleteMatchProfileByUserID(userID int64) error {
+	// 软删除：将 is_deleted 字段设置为 1
+	return global.DB.Model(&model.MatchProfile{}).
+		Where("user_id = ?", userID).
+		Update("is_deleted", 1).Error
+}
+
 // FindBestMatch 根据当前用户的Embedding向量和性别，查询数据库中异性用户的匹配信息，并计算相似度分数
 func FindBestMatch(currUserID int64, curUserGender string, currUserEmbedding *pgvector.Vector) (*model.MatchProfile, float64, error) {
 	// 定义一个临时结构体，嵌入原始模型并加上 Score 字段

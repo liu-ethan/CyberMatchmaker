@@ -46,3 +46,21 @@ func SearchMatch(c *gin.Context) {
 	// 3. 返回成功响应
 	c.JSON(http.StatusOK, gin.H{"message": "匹配成功", "data": result})
 }
+
+// LeaveMatch POST /api/v1/match/leave
+func LeaveMatch(c *gin.Context) {
+	// 1. 获取userID
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户未登录"})
+		return
+	}
+	// 2. 调用Service层的LeaveMatch函数
+	err := service.LeaveMatch(userID.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// 3. 返回成功响应
+	c.JSON(http.StatusOK, gin.H{"message": "成功退出匹配广场，您的信息已被删除，不会再被匹配到"})
+}

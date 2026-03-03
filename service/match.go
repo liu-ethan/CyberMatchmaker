@@ -106,7 +106,7 @@ func SearchMatch(userID int64) (*modelDTO.SearchMatchDTO, error) {
 	MatchUsrProfile, score, err := mapper.FindBestMatch(userID, CurrUsrProfile.Gender, &CurrUsrProfile.PartnerEmbedding)
 
 	// 3. 根据RecordID查询对方的算命记录，获取对方的基本信息（如年龄、职业、兴趣等）
-	MatchUsrRecord, err := mapper.GetFortuneRecordByID(CurrUsrProfile.FortuneRecordID)
+	MatchUsrRecord, err := mapper.GetFortuneRecordByID(MatchUsrProfile.FortuneRecordID)
 
 	// 4. 将对方的基本信息和相似度分数封装成SearchMatchDTO对象，返回给前端
 	MatchUsrDTO := &modelDTO.SearchMatchDTO{
@@ -121,4 +121,14 @@ func SearchMatch(userID int64) (*modelDTO.SearchMatchDTO, error) {
 	}
 
 	return MatchUsrDTO, nil
+}
+
+// LeaveMatch 处理用户退出匹配的业务逻辑
+func LeaveMatch(userID int64) error {
+	// 1. 从数据库中删除当前用户的匹配信息（逻辑删除，设置is_deleted字段为true）
+	err := mapper.DeleteMatchProfileByUserID(userID)
+	if err != nil {
+		return errors.New("退出匹配广场失败，请稍后再试")
+	}
+	return nil
 }
